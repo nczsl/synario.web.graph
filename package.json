@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "name": "synario.graph",
+  "type": "module",
+  "main": "index.ts",
+  "devDependencies": {
+    "@webgpu/types": "latest"
+  },
+  "dependencies": {
+    "synario.base": "file:../base"
+  }
+}

@@ -1,0 +1,29 @@
+import * as types_mod from './types';
+export declare class PipelineBuilder {
+    private device;
+    descriptor: types_mod.PipelineDescriptor;
+    pipelineLayout: GPUPipelineLayout;
+    bindgrouupLayouts: GPUBindGroupLayout[];
+    isRender: boolean;
+    get renderDescriptor(): GPURenderPipelineDescriptor;
+    set renderDescriptor(descriptor: GPURenderPipelineDescriptor);
+    get computeDescriptor(): GPUComputePipelineDescriptor;
+    set computeDescriptor(descriptor: GPUComputePipelineDescriptor);
+    constructor(device: GPUDevice, isRender: boolean);
+    setLabel(label: string): PipelineBuilder;
+    setVertexShader(code: string, fn?: string): PipelineBuilder;
+    setFragmentShader(code: string, colorstates: GPUColorTargetState[], fn?: string): PipelineBuilder;
+    addVertexStruct(config: types_mod.VertexFormatHandler): PipelineBuilder;
+    addVertexStructByExists(vertexBufferLayouts: GPUVertexBufferLayout[]): PipelineBuilder;
+    addBindGroupLayout(config: types_mod.BindGroupLayoutHandler): PipelineBuilder;
+    setBindGroupLayoutByExists(bindgroupLayouts: GPUBindGroupLayout[]): PipelineBuilder;
+    private createPipelineLayout;
+    setComputeShader(code: string, fn?: string): PipelineBuilder;
+    setRenderShader(code: string, fn: string, colorstates: GPUColorTargetState[]): PipelineBuilder;
+    setDepthStencil(format: GPUTextureFormat, depthWrite?: boolean, depthCompare?: GPUCompareFunction): PipelineBuilder;
+    setPrimitiveTopology(topology: GPUPrimitiveTopology, stripIndexFormat?: GPUIndexFormat): PipelineBuilder;
+    setCullMode(cullMode?: GPUCullMode, frontFace?: GPUFrontFace): PipelineBuilder;
+    setMultisample(count?: number, alphaToCoverage?: boolean): PipelineBuilder;
+    build(): types_mod.Pipeline;
+    buildAsync(): Promise<types_mod.Pipeline>;
+}

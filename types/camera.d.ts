@@ -1,0 +1,28 @@
+import * as math_mod from './gmath';
+export declare class Camera {
+    position: math_mod.Vector4;
+    target: math_mod.Vector4;
+    up: math_mod.Vector4;
+    fov: number;
+    aspect: number;
+    near: number;
+    far: number;
+    viewMatrix: math_mod.Matrix4;
+    projectionMatrix: math_mod.Matrix4;
+    static readonly BUFFER_SIZE: number;
+    buffer: ArrayBuffer;
+    bindgrouplayoutId_vs: number;
+    bindgroupId_vs: number;
+    bindgrouplayoutId_cs: number;
+    bindgroupId_cs: number;
+    bufferId: number;
+    constructor();
+    updateViewMatrix(): void;
+    updateProjectionMatrix(): void;
+    updateViewProjectionMatrix(): void;
+    setPerspective(fov: number, aspect: number, near: number, far: number): void;
+    setPosition(x: number, y: number, z: number, w?: number): void;
+    setTarget(x: number, y: number, z: number, w?: number): void;
+    setUp(x: number, y: number, z: number, w?: number): void;
+    updateBuffer(): void;
+}
