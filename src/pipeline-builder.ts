@@ -19,6 +19,7 @@ export class PipelineBuilder {
   pipelineLayout: GPUPipelineLayout;
   bindgrouupLayouts: GPUBindGroupLayout[];
   isRender: boolean;
+  private overrideConstants: Record<string, number> = {}; // 新增：存储 override 量
 
   get renderDescriptor(): GPURenderPipelineDescriptor {
     return this.descriptor as GPURenderPipelineDescriptor;
@@ -312,7 +313,13 @@ export class PipelineBuilder {
 
     return this;
   }
-
+  /**
+   * set override content value
+   */
+  setOverrideContentValue(key: string, value: number): PipelineBuilder {
+    this.overrideConstants[key] = value;
+    return this;
+  }
   /**
    * 构建管线
    * @returns 创建好的管线对象
@@ -325,6 +332,11 @@ export class PipelineBuilder {
 
     if (this.pipelineLayout) {
       this.descriptor.layout = this.pipelineLayout;
+    }
+
+    // 新增：应用 override 常量
+    if (Object.keys(this.overrideConstants).length > 0) {
+      (this.descriptor as any).constants = this.overrideConstants;
     }
 
     try {
@@ -368,6 +380,12 @@ export class PipelineBuilder {
     if (this.pipelineLayout) {
       this.descriptor.layout = this.pipelineLayout;
     }
+
+    // 新增：应用 override 常量
+    if (Object.keys(this.overrideConstants).length > 0) {
+      (this.descriptor as any).constants = this.overrideConstants;
+    }
+
     try {
       if (this.isRender) {
         // 检查必要属性

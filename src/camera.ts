@@ -132,5 +132,11 @@ export class Camera {
     // projParams: fov, aspect, near, far
     f32.set([this.fov, this.aspect, this.near, this.far], 44);
   }
+
+  // 兼容属性名，添加驼峰形式的 getter
+  get bindGroupLayoutId_vs() { return this.bindgrouplayoutId_vs; }
+  get bindGroupId_vs() { return this.bindgroupId_vs; }
+  get bindGroupLayoutId_cs() { return this.bindgrouplayoutId_cs; }
+  get bindGroupId_cs() { return this.bindgroupId_cs; }
 }
 

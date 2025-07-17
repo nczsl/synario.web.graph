@@ -1,52 +1,21 @@
 import { util_mod } from 'synario.base';
 import * as types_mod from './types';
-export var VertexAttributeType;
-(function (VertexAttributeType) {
-    VertexAttributeType["Position2"] = "position2";
-    VertexAttributeType["Position3"] = "position3";
-    VertexAttributeType["Position4"] = "position4";
-    VertexAttributeType["Normal"] = "normal";
-    VertexAttributeType["Tangent"] = "tangent";
-    VertexAttributeType["Bitangent"] = "bitangent";
-    VertexAttributeType["UV"] = "uv";
-    VertexAttributeType["UV2"] = "uv2";
-    VertexAttributeType["ColorU32x1"] = "coloru32x1";
-    VertexAttributeType["ColorF32x4"] = "colorf32x4";
-    VertexAttributeType["VertexID"] = "vertexId";
-    VertexAttributeType["InstanceID"] = "instanceId";
-    VertexAttributeType["MaterialID"] = "materialId";
-    VertexAttributeType["ObjectID"] = "objectId";
-    VertexAttributeType["DrawID"] = "drawId";
-    VertexAttributeType["PrimitiveID"] = "primitiveId";
-    VertexAttributeType["BoneIndices"] = "boneIndices";
-    VertexAttributeType["BoneWeights"] = "boneWeights";
-    VertexAttributeType["MorphTarget"] = "morphTarget";
-    VertexAttributeType["MorphWeight"] = "morphWeight";
-    VertexAttributeType["ParticlePosition"] = "particlePosition";
-    VertexAttributeType["ParticleVelocity"] = "particleVelocity";
-    VertexAttributeType["ParticleAge"] = "particleAge";
-    VertexAttributeType["ParticleSize"] = "particleSize";
-    VertexAttributeType["ParticleRotation"] = "particleRotation";
-    VertexAttributeType["Occlusion"] = "occlusion";
-    VertexAttributeType["Metalness"] = "metalness";
-    VertexAttributeType["Roughness"] = "roughness";
-    VertexAttributeType["Emissive"] = "emissive";
-    VertexAttributeType["Custom"] = "custom";
-})(VertexAttributeType || (VertexAttributeType = {}));
 export class VertexBufferBuilder {
     attributes = [];
     offset = 0;
     location = 0;
     stride = 0;
-    addAttribute(type, format, opts) {
+    stepMode;
+    constructor(stepMode = 'vertex') {
+        this.stepMode = stepMode;
+    }
+    append(format) {
         const size = VertexBufferBuilder.getFormatSize(format);
         const attr = {
-            type,
             format,
             shaderLocation: this.location,
             offset: this.offset,
-            size,
-            ...opts
+            size
         };
         this.attributes.push(attr);
         this.offset += size;
@@ -54,69 +23,29 @@ export class VertexBufferBuilder {
         this.stride = this.offset;
         return this;
     }
-    withPosition2(format = 'float32x2') {
-        return this.addAttribute(VertexAttributeType.Position2, format);
-    }
-    withPosition3(format = 'float32x3') {
-        return this.addAttribute(VertexAttributeType.Position3, format);
-    }
-    withPosition4(format = 'float32x4') {
-        return this.addAttribute(VertexAttributeType.Position4, format);
-    }
-    withNormal(format = 'float32x3') {
-        return this.addAttribute(VertexAttributeType.Normal, format);
-    }
-    withTangent(format = 'float32x4') {
-        return this.addAttribute(VertexAttributeType.Tangent, format);
-    }
-    withBitangent(format = 'float32x3') {
-        return this.addAttribute(VertexAttributeType.Bitangent, format);
-    }
-    withUV(format = 'float32x2') {
-        return this.addAttribute(VertexAttributeType.UV, format);
-    }
-    withUV2(format = 'float32x2') {
-        return this.addAttribute(VertexAttributeType.UV2, format);
-    }
-    withColorU32x1(format = 'uint32') {
-        return this.addAttribute(VertexAttributeType.ColorU32x1, format);
-    }
-    withColorF32x4(format = 'float32x4') {
-        return this.addAttribute(VertexAttributeType.ColorF32x4, format);
-    }
-    withObjectID(format = 'uint32') {
-        return this.addAttribute(VertexAttributeType.ObjectID, format);
-    }
-    withMaterialID(format = 'uint32') {
-        return this.addAttribute(VertexAttributeType.MaterialID, format);
-    }
-    withInstanceID(format = 'uint32') {
-        return this.addAttribute(VertexAttributeType.InstanceID, format);
-    }
-    withCustom(type, format) {
-        return this.addAttribute(type, format);
-    }
-    setLocation(location) {
-        this.location = location;
-        return this;
-    }
-    setOffset(offset) {
-        this.offset = offset;
-        return this;
-    }
-    setStride(stride) {
-        this.stride = stride;
+    add(format, start) {
+        const size = VertexBufferBuilder.getFormatSize(format);
+        const attr = {
+            format,
+            shaderLocation: this.location,
+            offset: this.offset,
+            size
+        };
+        this.attributes.push(attr);
+        this.offset += size;
+        this.location += start;
+        this.stride = this.offset;
         return this;
     }
     build() {
         const attributes = this.attributes.map(attr => ({
-            shaderLocation: attr.shaderLocation,
+            format: attr.format,
             offset: attr.offset,
-            format: attr.format
+            shaderLocation: attr.shaderLocation,
         }));
         return {
             arrayStride: this.stride,
-            stepMode: 'vertex',
+            stepMode: this.stepMode,
             attributes
         };
     }

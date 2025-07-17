@@ -15,6 +15,18 @@ export class MouseInfo {
   prevX: number = 0;
   prevY: number = 0;
   buttons: number = 0; // bitmask for buttons
+  gbufferId?: types_mod.Id;
+  buffer?: ArrayBuffer;
+
+  updateFromEvent(e: MouseEvent): void {
+    this.prevX = this.x;
+    this.prevY = this.y;
+    this.x = e.offsetX;
+    this.y = e.offsetY;
+    this.buttons = e.buttons;
+    // 更新 buffer
+    this.buffer = this.pack();
+  }
 
   packInto(view: DataView, offset: number): void {
     view.setFloat32(offset + 0, this.x, true);
@@ -23,6 +35,13 @@ export class MouseInfo {
     view.setFloat32(offset + 12, this.prevY, true);
     view.setUint32(offset + 16, this.buttons, true);
   }
+
+  pack(): ArrayBuffer {
+    const buf = new ArrayBuffer(MouseInfo.DATA_SIZE);
+    const view = new DataView(buf);
+    this.packInto(view, 0);
+    return buf;
+  }
 }
 
 // --- KeyInfo ---
@@ -30,6 +49,14 @@ export class KeyInfo {
   static DATA_SIZE: number = 32; // 示例大小
 
   private keyStates = new Uint8Array(KeyInfo.DATA_SIZE);
+  gbufferId?: types_mod.Id;
+  buffer?: ArrayBuffer;
+
+  updateFromEvent(e: KeyboardEvent): void {
+    // 简单示例：只处理按下/松开
+    this.setKeyState(e.keyCode, e.type === 'keydown');
+    this.buffer = this.pack();
+  }
 
   setKeyState(keyCode: number, isPressed: boolean): void {
     if (keyCode < KeyInfo.DATA_SIZE * 8) {
@@ -48,6 +75,13 @@ export class KeyInfo {
       view.setUint8(offset + i, this.keyStates[i]);
     }
   }
+
+  pack(): ArrayBuffer {
+    const buf = new ArrayBuffer(KeyInfo.DATA_SIZE);
+    const view = new DataView(buf);
+    this.packInto(view, 0);
+    return buf;
+  }
 }
 
 // --- TickInfo ---
@@ -56,10 +90,25 @@ export class TickInfo {
 
   frameCount: number = 0;
   deltaTime: number = 0.0;
+  gbufferId?: types_mod.Id;
+  buffer?: ArrayBuffer;
+
+  nextFrame(tick: number): void {
+    this.frameCount++;
+    this.deltaTime = tick;
+    this.buffer = this.pack();
+  }
 
   packInto(view: DataView, offset: number): void {
     view.setUint32(offset + 0, this.frameCount, true);
     view.setFloat32(offset + 4, this.deltaTime, true);
+  }
+
+  pack(): ArrayBuffer {
+    const buf = new ArrayBuffer(TickInfo.DATA_SIZE);
+    const view = new DataView(buf);
+    this.packInto(view, 0);
+    return buf;
   }
 }
 

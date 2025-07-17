@@ -5,6 +5,7 @@ export declare class PipelineBuilder {
     pipelineLayout: GPUPipelineLayout;
     bindgrouupLayouts: GPUBindGroupLayout[];
     isRender: boolean;
+    private overrideConstants;
     get renderDescriptor(): GPURenderPipelineDescriptor;
     set renderDescriptor(descriptor: GPURenderPipelineDescriptor);
     get computeDescriptor(): GPUComputePipelineDescriptor;
@@ -14,7 +15,7 @@ export declare class PipelineBuilder {
     setVertexShader(code: string, fn?: string): PipelineBuilder;
     setFragmentShader(code: string, colorstates: GPUColorTargetState[], fn?: string): PipelineBuilder;
     addVertexStruct(config: types_mod.VertexFormatHandler): PipelineBuilder;
-    addVertexStructByExists(vertexBufferLayouts: GPUVertexBufferLayout[]): PipelineBuilder;
+    addVertexStructByExists(layouts: GPUVertexBufferLayout[]): PipelineBuilder;
     addBindGroupLayout(config: types_mod.BindGroupLayoutHandler): PipelineBuilder;
     setBindGroupLayoutByExists(bindgroupLayouts: GPUBindGroupLayout[]): PipelineBuilder;
     private createPipelineLayout;
@@ -24,6 +25,7 @@ export declare class PipelineBuilder {
     setPrimitiveTopology(topology: GPUPrimitiveTopology, stripIndexFormat?: GPUIndexFormat): PipelineBuilder;
     setCullMode(cullMode?: GPUCullMode, frontFace?: GPUFrontFace): PipelineBuilder;
     setMultisample(count?: number, alphaToCoverage?: boolean): PipelineBuilder;
+    setOverrideContentValue(key: string, value: number): PipelineBuilder;
     build(): types_mod.Pipeline;
     buildAsync(): Promise<types_mod.Pipeline>;
 }

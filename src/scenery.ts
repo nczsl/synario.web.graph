@@ -20,6 +20,7 @@ export class Scenery {
   context: GPUCanvasContext;
   device: GPUDevice;
   control: control_mod.Control; // 控制器 - 用于处理渲染循环和更新逻辑
+  format: GPUTextureFormat; // 新增：记录当前画布格式
 
   // 是否正在运行渲染循环
   private isRunning: boolean = false;
@@ -37,12 +38,19 @@ export class Scenery {
     this.context = canvas.getContext('webgpu');
     let adapter = await navigator.gpu.requestAdapter();
     this.device = await adapter.requestDevice();
+    this.format = 'bgra8unorm'; // 新增：与 context.configure 保持一致
     this.context.configure({
       device: this.device,
-      format: 'bgra8unorm',
-    });
+      format: this.format,
+    }); 
     this.access = new data_access_mod.DataAccess(this);
-
+    let texture = this.device.createTexture({
+      size:[canvas.width, canvas.height,2],
+      format: this.format, // 保持一致
+      usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+      viewFormats: [this.format],
+    })
+    let textureView = texture.createView();
     // 初始化两个固定渲染层
     this.major = new render_graph_mod.RenderGraph(this);
     this.minor = new render_graph_mod.RenderGraph(this);

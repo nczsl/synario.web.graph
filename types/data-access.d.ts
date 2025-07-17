@@ -5,33 +5,27 @@ import * as camera_mod from './camera';
 import * as scenery_mod from './scenery';
 export declare class DataAccess {
     store: store_mod.Store;
-    scen: scenery_mod.Scenery;
+    scenery: scenery_mod.Scenery;
     colorTargetStateIds: {
-        [key: string]: number;
+        [key: string]: types_mod.Id;
     };
     constructor(scen: scenery_mod.Scenery);
-    registryView(texture: GPUTexture): number;
-    registryPassParam(param?: types_mod.PassParam): number;
-    registryRenderPipeline(config: types_mod.PipelineHandler): number;
-    registryComputePipeline(config: types_mod.PipelineHandler): number;
-    registryColorAttachment(colorAttachment: GPURenderPassColorAttachment): number;
-    registryColorTargetState(config: types_mod.ColorStateHandler): number;
-    registryBindGroupLayout(config: types_mod.BindGroupLayoutHandler): number;
-    registryBindGroup(config: types_mod.BindGroupHandler): number;
-    registryVertexBufferLayout(config: types_mod.VertexFormatHandler): number;
-    registryBuffer(size: number, usage?: number): number;
-    updateBuffer(id: number, data: ArrayBufferLike): void;
-    registryTexture(config: types_mod.TextureDescriptorHandler): number;
-    updateTexture(id: number, data: ArrayBufferLike, options?: {
+    registryRenderPipeline(config: types_mod.PipelineHandler): types_mod.Id;
+    registryComputePipeline(config: types_mod.PipelineHandler): types_mod.Id;
+    registryBindGroupLayout(config: types_mod.BindGroupLayoutHandler): types_mod.Id;
+    registryBindGroup(config: types_mod.BindGroupHandler): types_mod.Id;
+    registryBuffer(size: GPUSize32, usage?: GPUBufferUsageFlags): types_mod.Id;
+    updateBuffer(id: types_mod.Id, data: ArrayBufferLike): void;
+    registryTexture(config: types_mod.TextureDescriptorHandler): types_mod.Id;
+    updateTexture(id: types_mod.Id, data: ArrayBufferLike, options: {
+        width: number;
+        height: number;
+        format: GPUTextureFormat;
         bytesPerRow?: number;
         rowsPerImage?: number;
-        width?: number;
-        height?: number;
-        depthOrArrayLayers?: number;
         offset?: number;
-        format?: GPUTextureFormat;
         mipLevel?: number;
+        depthOrArrayLayers?: number;
     }): void;
     initSignalCamera(signal: signal_mod.Signal, camera: camera_mod.Camera): void;
-    initColorTargetState(): void;
 }

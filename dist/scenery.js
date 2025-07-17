@@ -11,6 +11,7 @@ export class Scenery {
     context;
     device;
     control;
+    format;
     isRunning = false;
     access;
     major;
@@ -20,11 +21,19 @@ export class Scenery {
         this.context = canvas.getContext('webgpu');
         let adapter = await navigator.gpu.requestAdapter();
         this.device = await adapter.requestDevice();
+        this.format = 'bgra8unorm';
         this.context.configure({
             device: this.device,
-            format: 'bgra8unorm',
+            format: this.format,
         });
         this.access = new data_access_mod.DataAccess(this);
+        let texture = this.device.createTexture({
+            size: [canvas.width, canvas.height, 2],
+            format: this.format,
+            usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+            viewFormats: [this.format],
+        });
+        let textureView = texture.createView();
         this.major = new render_graph_mod.RenderGraph(this);
         this.minor = new render_graph_mod.RenderGraph(this);
         this.control = new control_mod.Control(this.access);

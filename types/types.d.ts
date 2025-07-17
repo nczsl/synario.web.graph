@@ -1,70 +1,62 @@
 import * as builders_mod from './builders';
 import * as pipeline_builder_mod from './pipeline-builder';
 import * as vertex_format_builder_mod from './vertex-format-builder';
-import * as data_access_mod from './data-access';
-import * as model_mod from './model';
+import * as scen_mod from './scene';
+import * as render_graph_mod from './render-graph';
 export declare enum ResType {
     buffer = 0,
     texture = 1,
-    externalTexture = 2,
-    sampler = 3,
-    colorTargetState = 4,
-    bindGroup = 5,
-    bindGroupLayout = 6,
-    textureView = 7,
-    vertexBufferLayout = 8,
-    pipelineLayout = 9,
-    renderpipeline = 10,
-    computepipeline = 11,
-    colorAttachment = 12,
-    renderBundleDescriptor = 13,
-    querySet = 14,
-    passParam = 15
+    sampler = 2,
+    bindGroup = 3,
+    bindGroupLayout = 4,
+    renderpipeline = 5,
+    computepipeline = 6
 }
-export type StoreResource = GPUBuffer | GPUTexture | GPUExternalTexture | GPUSampler | GPUColorTargetState | GPUBindGroup | GPUBindGroupLayout | GPUPipelineLayout | GPUTextureView | GPUVertexBufferLayout | GPURenderPipeline | GPUComputePipeline | GPURenderPassColorAttachment | GPURenderBundleDescriptor | GPUQuerySet | PassParam;
+export type ScenAttachmentValue = number;
+export declare enum ScenAttachment {
+    None = 0,
+    RequiresColorAttachment0 = 1,
+    RequiresColorAttachment1 = 2,
+    RequiresColorAttachment2 = 4,
+    RequiresColorAttachment3 = 8,
+    RequiresDepthStencilAttachment = 16
+}
+export type ScenResourceValue = number;
+export declare enum ScenResource {
+    None = 0,
+    RequiresVertexBuffer = 1,
+    RequiresIndexBuffer = 2,
+    RequiresGOSBuffer = 4,
+    RequiresIndirectDrawBuffer = 8,
+    RequiresIndirectIndexDrawBuffer = 16,
+    RequiresIndirectWorkdispatchBuffer = 32,
+    RequiresGOSTexture = 64,
+    RequiresCaseBuffer = 128,
+    RequiresTargetTexture = 256,
+    RequiresOutBuffer = 512
+}
+export type StoreResource = GPUBuffer | GPUTexture | GPUSampler | GPUBindGroup | GPUBindGroupLayout | GPURenderPipeline | GPUComputePipeline;
+export type Id = number;
 export type Pipeline = GPURenderPipeline | GPUComputePipeline;
 export type PassEncoder = GPURenderPassEncoder | GPUComputePassEncoder | GPURenderBundleEncoder;
 export type PassDescriptor = GPURenderPassDescriptor | GPUComputePassDescriptor | GPURenderBundleDescriptor;
-type MethodKeys<T> = {
-    [K in keyof T]: T[K] extends (...args: unknown[]) => unknown ? K : never;
-}[keyof T];
-export type RenderPassKeys = MethodKeys<GPURenderPassEncoder>;
-export type ComputePassKeys = MethodKeys<GPUComputePassEncoder>;
-export type PassHandler = (sender: INode, pass: PassEncoder, res: data_access_mod.DataAccess) => unknown;
-export type PassParamId = number;
-export type PassItem = {
-    param: PassParamId;
-};
-type ExtractParamType<T, K extends string | number | symbol> = K extends keyof T ? T[K] extends (...args: infer P) => any ? P : never : never;
-export type RenderPassParam = {
-    [K in RenderPassKeys]?: ExtractParamType<GPURenderPassEncoder, K>[];
-};
-export type ComputePassParam = {
-    [K in ComputePassKeys]?: ExtractParamType<GPUComputePassEncoder, K>[];
-};
-export declare function ensureParamArray<T>(value: T | T[]): T[];
-export type PassParam = RenderPassParam | ComputePassParam;
-export type PassDict = Record<string, PassParamId | PassParamId[]>;
-export type PassDictName = 'RenderPassDict' | 'ComputePassDict';
-export type PassId = number;
+export type PassHandler = (sender: INode, pass: PassEncoder) => unknown;
 export interface INode {
-    name: string;
-    type: PassDictName;
-    order: number;
-    colorAttachmentId: PassId;
-    passParamId?: PassId;
-    get passParam(): PassParam;
-    get colorAttachment(): GPURenderPassColorAttachment;
-    mesh: model_mod.Mesh;
-    setPipeline(isRender: boolean, isSignal: boolean, isCammera: boolean, codes: string[]): void;
-    loadRenderPassParam(): void;
-    loadComputePassParam(): void;
-    onframe?: PassHandler;
-    frame: (pass: PassEncoder) => void;
-    createRenderPassDescriptor(): GPURenderPassDescriptor;
-    createComputePassDescriptor(): GPUComputePassDescriptor;
+    id: Id;
+    label: string;
+    owner: render_graph_mod.RenderGraph;
+    scene: scen_mod.Scene;
+    pipeline: Pipeline;
+    passDescriptor: PassDescriptor;
+    init(codes: string[], topology: GPUPrimitiveTopology, mainName: string): void;
+    onframe: PassHandler;
+    configureOnFrame(): void;
 }
-export type ColorStateHandler = (builder: builders_mod.ColorStateBuilder) => GPUColorTargetState;
+export type ColorAttachmentBuilder = (builder: builders_mod.ColorAttachmentBuilder) => GPURenderPassColorAttachment[];
+export type DepthStencilAttachmentBuilder = (builder: builders_mod.DepthStencilAttachmentBuilder) => GPURenderPassDepthStencilAttachment;
+export type ColorAttachmentParamSettingHandler = (colorAttachments: GPURenderPassColorAttachment[]) => GPURenderPassColorAttachment[];
+export type DepthStencilAttachmentParamSettingHandler = (depthStencilAttachment: GPURenderPassDepthStencilAttachment) => GPURenderPassDepthStencilAttachment;
+export type ColorStateHandler = (builder: builders_mod.ColorStateBuilder) => GPUColorTargetState[];
 export type BindGroupLayoutHandler = (builder: builders_mod.BindGroupLayoutBuilder) => GPUBindGroupLayout;
 export type BindGroupHandler = (builder: builders_mod.BindGroupBuilder) => GPUBindGroup;
 export type PipelineHandler = (pipe: pipeline_builder_mod.PipelineBuilder) => Pipeline;
@@ -79,4 +71,3 @@ export type ResDic = {
         id1: number;
     };
 };
-export {};

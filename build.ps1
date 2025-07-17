@@ -52,3 +52,16 @@ Add-Content -Path $indexPath -Value "`n// shader exports"
 Add-Content -Path $indexPath -Value ($shaderExports -join "`n")
 
 echo "rewrite index.ts done"
+
+# === 生成全局类型声明 global.d.ts，供三斜杠引用 ===
+$typesDir = Join-Path $workdir "types"
+$globalDts = Join-Path $workdir "global.d.ts"
+
+# 清空旧的 global.d.ts
+if (Test-Path $globalDts) { Remove-Item $globalDts }
+
+# 合并所有 d.ts，去除 import/export，只保留类型声明
+Get-ChildItem $typesDir -Filter *.d.ts | Where-Object { $_.Name -notlike "*global.d.ts" } | ForEach-Object {
+    (Get-Content $_.FullName) -replace '(^|\s+)import .*', '' -replace '(^|\s+)export ', '' | Add-Content -Path $globalDts
+}
+Write-Host "Generated global.d.ts for triple-slash reference."

@@ -3,26 +3,38 @@ import * as builders_mod from './builders';
 import * as pipeline_builder_mod from './pipeline-builder';
 import * as vertex_format_builder_mod from './vertex-format-builder';
 import * as data_access_mod from './data-access';
-import * as model_mod from './model';
+import * as scen_mod from './scene';
+import * as render_graph_mod from './render-graph';
 export var ResType;
 (function (ResType) {
     ResType[ResType["buffer"] = 0] = "buffer";
     ResType[ResType["texture"] = 1] = "texture";
-    ResType[ResType["externalTexture"] = 2] = "externalTexture";
-    ResType[ResType["sampler"] = 3] = "sampler";
-    ResType[ResType["colorTargetState"] = 4] = "colorTargetState";
-    ResType[ResType["bindGroup"] = 5] = "bindGroup";
-    ResType[ResType["bindGroupLayout"] = 6] = "bindGroupLayout";
-    ResType[ResType["textureView"] = 7] = "textureView";
-    ResType[ResType["vertexBufferLayout"] = 8] = "vertexBufferLayout";
-    ResType[ResType["pipelineLayout"] = 9] = "pipelineLayout";
-    ResType[ResType["renderpipeline"] = 10] = "renderpipeline";
-    ResType[ResType["computepipeline"] = 11] = "computepipeline";
-    ResType[ResType["colorAttachment"] = 12] = "colorAttachment";
-    ResType[ResType["renderBundleDescriptor"] = 13] = "renderBundleDescriptor";
-    ResType[ResType["querySet"] = 14] = "querySet";
-    ResType[ResType["passParam"] = 15] = "passParam";
+    ResType[ResType["sampler"] = 2] = "sampler";
+    ResType[ResType["bindGroup"] = 3] = "bindGroup";
+    ResType[ResType["bindGroupLayout"] = 4] = "bindGroupLayout";
+    ResType[ResType["renderpipeline"] = 5] = "renderpipeline";
+    ResType[ResType["computepipeline"] = 6] = "computepipeline";
 })(ResType || (ResType = {}));
-export function ensureParamArray(value) {
-    return Array.isArray(value) ? value : [value];
-}
+export var ScenAttachment;
+(function (ScenAttachment) {
+    ScenAttachment[ScenAttachment["None"] = 0] = "None";
+    ScenAttachment[ScenAttachment["RequiresColorAttachment0"] = 1] = "RequiresColorAttachment0";
+    ScenAttachment[ScenAttachment["RequiresColorAttachment1"] = 2] = "RequiresColorAttachment1";
+    ScenAttachment[ScenAttachment["RequiresColorAttachment2"] = 4] = "RequiresColorAttachment2";
+    ScenAttachment[ScenAttachment["RequiresColorAttachment3"] = 8] = "RequiresColorAttachment3";
+    ScenAttachment[ScenAttachment["RequiresDepthStencilAttachment"] = 16] = "RequiresDepthStencilAttachment";
+})(ScenAttachment || (ScenAttachment = {}));
+export var ScenResource;
+(function (ScenResource) {
+    ScenResource[ScenResource["None"] = 0] = "None";
+    ScenResource[ScenResource["RequiresVertexBuffer"] = 1] = "RequiresVertexBuffer";
+    ScenResource[ScenResource["RequiresIndexBuffer"] = 2] = "RequiresIndexBuffer";
+    ScenResource[ScenResource["RequiresGOSBuffer"] = 4] = "RequiresGOSBuffer";
+    ScenResource[ScenResource["RequiresIndirectDrawBuffer"] = 8] = "RequiresIndirectDrawBuffer";
+    ScenResource[ScenResource["RequiresIndirectIndexDrawBuffer"] = 16] = "RequiresIndirectIndexDrawBuffer";
+    ScenResource[ScenResource["RequiresIndirectWorkdispatchBuffer"] = 32] = "RequiresIndirectWorkdispatchBuffer";
+    ScenResource[ScenResource["RequiresGOSTexture"] = 64] = "RequiresGOSTexture";
+    ScenResource[ScenResource["RequiresCaseBuffer"] = 128] = "RequiresCaseBuffer";
+    ScenResource[ScenResource["RequiresTargetTexture"] = 256] = "RequiresTargetTexture";
+    ScenResource[ScenResource["RequiresOutBuffer"] = 512] = "RequiresOutBuffer";
+})(ScenResource || (ScenResource = {}));

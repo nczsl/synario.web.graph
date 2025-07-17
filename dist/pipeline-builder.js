@@ -8,6 +8,7 @@ export class PipelineBuilder {
     pipelineLayout;
     bindgrouupLayouts;
     isRender;
+    overrideConstants = {};
     get renderDescriptor() {
         return this.descriptor;
     }
@@ -100,16 +101,12 @@ export class PipelineBuilder {
         ];
         return this;
     }
-    addVertexStructByExists(vertexBufferLayouts) {
+    addVertexStructByExists(layouts) {
         if (!this.isRender) {
             throw new Error("Vertex state can only be set for render pipelines.");
         }
-        if (!this.renderDescriptor.vertex.buffers) {
-            this.renderDescriptor.vertex.buffers = [];
-        }
         this.renderDescriptor.vertex.buffers = [
             ...(Array.from(this.renderDescriptor.vertex.buffers)),
-            ...vertexBufferLayouts
         ];
         return this;
     }
@@ -219,12 +216,19 @@ export class PipelineBuilder {
         };
         return this;
     }
+    setOverrideContentValue(key, value) {
+        this.overrideConstants[key] = value;
+        return this;
+    }
     build() {
         if (!this.pipelineLayout && this.bindgrouupLayouts.length > 0) {
             this.createPipelineLayout();
         }
         if (this.pipelineLayout) {
             this.descriptor.layout = this.pipelineLayout;
+        }
+        if (Object.keys(this.overrideConstants).length > 0) {
+            this.descriptor.constants = this.overrideConstants;
         }
         try {
             if (this.isRender) {
@@ -255,6 +259,9 @@ export class PipelineBuilder {
         }
         if (this.pipelineLayout) {
             this.descriptor.layout = this.pipelineLayout;
+        }
+        if (Object.keys(this.overrideConstants).length > 0) {
+            this.descriptor.constants = this.overrideConstants;
         }
         try {
             if (this.isRender) {

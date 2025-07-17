@@ -1,0 +1,15 @@
+# 排除任意目录下的 dist
+.parcel*
+node_modules/
+**/dist/
+dist
+.git/
+# 常见构建产物
+*.log
+*.tmp
+*.cache
+coverage/
+out/
+build/
+bin/
+obj/

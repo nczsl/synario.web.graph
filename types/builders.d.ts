@@ -1,8 +1,28 @@
+export declare class DepthStencilAttachmentBuilder {
+    private depthStencilAttachment;
+    setView(view: GPUTextureView): this;
+    setDepthClearValue(value: number): this;
+    setDepthLoadOp(op: GPULoadOp): this;
+    setDepthStoreOp(op: GPUStoreOp): this;
+    setStencilClearValue(value: number): this;
+    setStencilLoadOp(op: GPULoadOp): this;
+    setStencilStoreOp(op: GPUStoreOp): this;
+    build(): GPURenderPassDepthStencilAttachment;
+}
+export declare class ColorAttachmentBuilder {
+    private colorAttachment;
+    private current;
+    addView(view: GPUTextureView): this;
+    setClearValue(clearValue: GPUColor): this;
+    setLoadOp(loadOp: GPULoadOp): this;
+    setStoreOp(storeOp: GPUStoreOp): this;
+    build(): GPURenderPassColorAttachment[];
+}
 import * as types_mod from './types';
 export declare class ColorStateBuilder {
-    private state;
+    private states;
     addState(format: GPUTextureFormat, colorblend?: GPUBlendComponent, alphablend?: GPUBlendComponent): this;
-    build(): GPUColorTargetState;
+    build(): GPUColorTargetState[];
 }
 export declare class BindGroupLayoutBuilder {
     private entries;
@@ -21,18 +41,11 @@ export declare class BindGroupLayoutBuilder {
 }
 export declare class TextureDescriptorBuilder {
     private descriptor;
-    size(size: {
-        width: number;
-        height: number;
-        depthOrArrayLayers?: number;
-    }): this;
     setSize(width: number, height: number, depthOrArrayLayers?: number): this;
-    format(format: GPUTextureFormat): this;
     setFormat(format: GPUTextureFormat): this;
-    usage(usage: GPUTextureUsageFlags): this;
     setUsage(usage: GPUTextureUsageFlags): this;
-    setDimension(dimension: GPUTextureDimension): this;
-    setMipLevelCount(mipLevelCount: GPUIntegerCoordinate): this;
+    setDimension(dimension?: GPUTextureDimension): this;
+    setMipLevelCount(mipLevelCount?: number): this;
     setSampleCount(sampleCount: GPUIntegerCoordinate): this;
     setViewFormats(viewFormats: GPUTextureFormat[]): this;
     build(): GPUTextureDescriptor;
@@ -52,9 +65,9 @@ export declare class SamplerDescriptorBuilder {
 export declare class BindGroupBuilder {
     entries: GPUBindGroupEntry[];
     private bindingSet;
-    addBuffer(no: number, buffer: GPUBuffer): this;
-    addTexture(no: number, textureView: GPUTextureView): this;
-    addSampler(no: number, sampler: GPUSampler): this;
+    addBuffer(binding: number, buffer: GPUBuffer): this;
+    addTexture(binding: number, textureView: GPUTextureView): this;
+    addSampler(binding: number, sampler: GPUSampler): this;
     build(device: GPUDevice, layout: GPUBindGroupLayout): GPUBindGroup;
     private validateBinding;
 }

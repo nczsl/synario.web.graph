@@ -1,7 +1,78 @@
+export class DepthStencilAttachmentBuilder {
+    depthStencilAttachment;
+    setView(view) {
+        this.depthStencilAttachment = {
+            view,
+            depthClearValue: 1.0,
+            depthLoadOp: 'clear',
+            depthStoreOp: 'store',
+            stencilClearValue: 0,
+            stencilLoadOp: 'clear',
+            stencilStoreOp: 'store',
+        };
+        return this;
+    }
+    setDepthClearValue(value) {
+        this.depthStencilAttachment.depthClearValue = value;
+        return this;
+    }
+    setDepthLoadOp(op) {
+        this.depthStencilAttachment.depthLoadOp = op;
+        return this;
+    }
+    setDepthStoreOp(op) {
+        this.depthStencilAttachment.depthStoreOp = op;
+        return this;
+    }
+    setStencilClearValue(value) {
+        this.depthStencilAttachment.stencilClearValue = value;
+        return this;
+    }
+    setStencilLoadOp(op) {
+        this.depthStencilAttachment.stencilLoadOp = op;
+        return this;
+    }
+    setStencilStoreOp(op) {
+        this.depthStencilAttachment.stencilStoreOp = op;
+        return this;
+    }
+    build() {
+        return this.depthStencilAttachment;
+    }
+}
+export class ColorAttachmentBuilder {
+    colorAttachment = [];
+    current;
+    addView(view) {
+        this.current = {
+            view,
+            clearValue: { r: 0, g: 0, b: 0, a: 1 },
+            loadOp: 'clear',
+            storeOp: 'store'
+        };
+        this.colorAttachment.push(this.current);
+        return this;
+    }
+    setClearValue(clearValue) {
+        this.current.clearValue = clearValue;
+        return this;
+    }
+    setLoadOp(loadOp) {
+        this.current.loadOp = loadOp;
+        return this;
+    }
+    setStoreOp(storeOp) {
+        this.current.storeOp = storeOp;
+        return this;
+    }
+    build() {
+        return this.colorAttachment;
+    }
+}
 import { util_mod, engine_mod } from 'synario.base';
 import * as types_mod from './types';
 export class ColorStateBuilder {
-    state = null;
+    states = [];
     addState(format, colorblend = {
         operation: "add",
         srcFactor: "one",
@@ -11,21 +82,21 @@ export class ColorStateBuilder {
         srcFactor: "one",
         dstFactor: "zero"
     }) {
-        this.state = {
+        this.states.push({
             format: format,
             blend: {
                 color: colorblend,
                 alpha: alphablend
             },
             writeMask: GPUColorWrite.ALL
-        };
+        });
         return this;
     }
     build() {
-        if (!this.state) {
-            throw new Error("ColorTargetState not configured");
+        if (this.states.length === 0) {
+            throw new Error("No color target states configured");
         }
-        return this.state;
+        return this.states;
     }
 }
 export class BindGroupLayoutBuilder {
@@ -101,39 +172,23 @@ export class TextureDescriptorBuilder {
         format: 'rgba8unorm',
         usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST
     };
-    size(size) {
-        this.descriptor.size = {
-            width: size.width,
-            height: size.height,
-            depthOrArrayLayers: size.depthOrArrayLayers || 1
-        };
-        return this;
-    }
     setSize(width, height, depthOrArrayLayers = 1) {
         this.descriptor.size = { width, height, depthOrArrayLayers };
-        return this;
-    }
-    format(format) {
-        this.descriptor.format = format;
         return this;
     }
     setFormat(format) {
         this.descriptor.format = format;
         return this;
     }
-    usage(usage) {
-        this.descriptor.usage = usage;
-        return this;
-    }
     setUsage(usage) {
         this.descriptor.usage = usage;
         return this;
     }
-    setDimension(dimension) {
+    setDimension(dimension = '1d') {
         this.descriptor.dimension = dimension;
         return this;
     }
-    setMipLevelCount(mipLevelCount) {
+    setMipLevelCount(mipLevelCount = 0) {
         this.descriptor.mipLevelCount = mipLevelCount;
         return this;
     }
@@ -192,26 +247,26 @@ export class SamplerDescriptorBuilder {
 export class BindGroupBuilder {
     entries = [];
     bindingSet = new Set();
-    addBuffer(no, buffer) {
-        this.validateBinding(no);
+    addBuffer(binding, buffer) {
+        this.validateBinding(binding);
         this.entries.push({
-            binding: no,
+            binding: binding,
             resource: { buffer }
         });
         return this;
     }
-    addTexture(no, textureView) {
-        this.validateBinding(no);
+    addTexture(binding, textureView) {
+        this.validateBinding(binding);
         this.entries.push({
-            binding: no,
+            binding: binding,
             resource: textureView
         });
         return this;
     }
-    addSampler(no, sampler) {
-        this.validateBinding(no);
+    addSampler(binding, sampler) {
+        this.validateBinding(binding);
         this.entries.push({
-            binding: no,
+            binding: binding,
             resource: sampler
         });
         return this;

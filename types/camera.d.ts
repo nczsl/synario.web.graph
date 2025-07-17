@@ -25,4 +25,8 @@ export declare class Camera {
     setTarget(x: number, y: number, z: number, w?: number): void;
     setUp(x: number, y: number, z: number, w?: number): void;
     updateBuffer(): void;
+    get bindGroupLayoutId_vs(): number;
+    get bindGroupId_vs(): number;
+    get bindGroupLayoutId_cs(): number;
+    get bindGroupId_cs(): number;
 }

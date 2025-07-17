@@ -1,4 +1,108 @@
 /**
+ * 深度模板附件构建器
+ * 用于批量构建 GPURenderPassDepthStencilAttachment 数组
+ */
+export class DepthStencilAttachmentBuilder {
+  private depthStencilAttachment: GPURenderPassDepthStencilAttachment;
+
+  /** 添加一个深度模板附件视图（必须） */
+  setView(view: GPUTextureView): this {
+    this.depthStencilAttachment  = {
+      view,
+      depthClearValue: 1.0,
+      depthLoadOp: 'clear',
+      depthStoreOp: 'store',
+      stencilClearValue: 0,
+      stencilLoadOp: 'clear',
+      stencilStoreOp: 'store',
+    };
+    return this;
+  }
+
+  /** 设置 depthClearValue */
+  setDepthClearValue(value: number): this {
+    this.depthStencilAttachment .depthClearValue = value;
+    return this;
+  }
+
+  /** 设置 depthLoadOp */
+  setDepthLoadOp(op: GPULoadOp): this {
+    this.depthStencilAttachment .depthLoadOp = op;
+    return this;
+  }
+
+  /** 设置 depthStoreOp */
+  setDepthStoreOp(op: GPUStoreOp): this {
+    this.depthStencilAttachment .depthStoreOp = op;
+    return this;
+  }
+
+  /** 设置 stencilClearValue */
+  setStencilClearValue(value: number): this {
+    this.depthStencilAttachment .stencilClearValue = value;
+    return this;
+  }
+
+  /** 设置 stencilLoadOp */
+  setStencilLoadOp(op: GPULoadOp): this {
+    this.depthStencilAttachment .stencilLoadOp = op;
+    return this;
+  }
+
+  /** 设置 stencilStoreOp */
+  setStencilStoreOp(op: GPUStoreOp): this {
+    this.depthStencilAttachment .stencilStoreOp = op;
+    return this;
+  }
+
+  /** 构建 GPURenderPassDepthStencilAttachment 数组 */
+  build(): GPURenderPassDepthStencilAttachment {
+    return this.depthStencilAttachment;
+  }
+}
+/**
+ * 颜色附件构建器
+ * 用于批量构建 GPURenderPassColorAttachment 数组
+ */
+export class ColorAttachmentBuilder {
+  private colorAttachment: GPURenderPassColorAttachment[] = [];
+  private current: GPURenderPassColorAttachment;
+  /** 添加一个颜色附件视图（必须） */
+  addView(view: GPUTextureView): this {
+    this.current = {
+      view,
+      clearValue: { r: 0, g: 0, b: 0, a: 1 }, // 默认清除颜色
+      loadOp: 'clear', // 默认加载操作
+      storeOp: 'store' // 默认存储操作
+    };
+    this.colorAttachment.push(this.current);
+    return this;
+  }
+
+  /** 批量设置 clearValue，可单个或数组 */
+  setClearValue(clearValue: GPUColor): this {
+    this.current.clearValue = clearValue
+    return this;
+  }
+
+  /** 批量设置 loadOp，可单个或数组 */
+  setLoadOp(loadOp: GPULoadOp): this {
+    this.current.loadOp = loadOp;
+    return this;
+  }
+
+  /** 批量设置 storeOp，可单个或数组 */
+  setStoreOp(storeOp: GPUStoreOp): this {
+    this.current.storeOp = storeOp;
+    return this;
+  }
+
+  /** 构建 GPURenderPassColorAttachment 数组 */
+  build(): GPURenderPassColorAttachment[] {
+    return this.colorAttachment;
+  }
+}
+/**
  * Synario WebGPU Graphics Library
  * @file builders.ts
  * @description 构建器基类和通用构建器
@@ -9,8 +113,8 @@ import * as types_mod from './types';
 
 
 export class ColorStateBuilder {
-  private state: GPUColorTargetState | null = null;
-  
+  private states: GPUColorTargetState[] = [];
+
   addState(
     format: GPUTextureFormat,
     colorblend: GPUBlendComponent = {
@@ -24,22 +128,22 @@ export class ColorStateBuilder {
       dstFactor: "zero"
     }
   ): this {
-    this.state = {
+    this.states.push({
       format: format,
       blend: {
         color: colorblend,
         alpha: alphablend
       },
       writeMask: GPUColorWrite.ALL
-    };
+    });
     return this;
   }
-  
-  build(): GPUColorTargetState {
-    if (!this.state) {
-      throw new Error("ColorTargetState not configured");
+
+  build(): GPUColorTargetState[] {
+    if (this.states.length === 0) {
+      throw new Error("No color target states configured");
     }
-    return this.state;
+    return this.states;
   }
 }
 export class BindGroupLayoutBuilder {
@@ -156,15 +260,6 @@ export class TextureDescriptorBuilder {
     usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST
   };
 
-  // 设置纹理大小(对象参数版本)
-  size(size: {width: number, height: number, depthOrArrayLayers?: number}): this {
-    this.descriptor.size = { 
-      width: size.width, 
-      height: size.height, 
-      depthOrArrayLayers: size.depthOrArrayLayers || 1 
-    };
-    return this;
-  }
 
   // 设置纹理大小(独立参数版本)
   setSize(width: number, height: number, depthOrArrayLayers: number = 1): this {
@@ -172,34 +267,24 @@ export class TextureDescriptorBuilder {
     return this;
   }
 
-  // 设置纹理格式
-  format(format: GPUTextureFormat): this {
-    this.descriptor.format = format;
-    return this;
-  }
 
   setFormat(format: GPUTextureFormat): this {
     this.descriptor.format = format;
     return this;
   }
 
-  // 设置纹理使用标志
-  usage(usage: GPUTextureUsageFlags): this {
-    this.descriptor.usage = usage;
-    return this;
-  }
 
   setUsage(usage: GPUTextureUsageFlags): this {
     this.descriptor.usage = usage;
     return this;
   }
 
-  setDimension(dimension: GPUTextureDimension): this {
+  setDimension(dimension: GPUTextureDimension = '1d'): this {
     this.descriptor.dimension = dimension;
     return this;
   }
 
-  setMipLevelCount(mipLevelCount: GPUIntegerCoordinate): this {
+  setMipLevelCount(mipLevelCount = 0): this {
     this.descriptor.mipLevelCount = mipLevelCount;
     return this;
   }
@@ -281,12 +366,12 @@ export class BindGroupBuilder {
 
   // Buffer类型配置（类型安全重载）
   addBuffer(
-    no: number,
+    binding: number,
     buffer: GPUBuffer,
   ): this {
-    this.validateBinding(no);
+    this.validateBinding(binding);
     this.entries.push({
-      binding: no,
+      binding: binding,
       resource: { buffer }
     });
     return this;
@@ -294,12 +379,12 @@ export class BindGroupBuilder {
 
   // Texture类型配置（独立方法防止参数混淆）
   addTexture(
-    no: number,
+    binding: number,
     textureView: GPUTextureView,
   ): this {
-    this.validateBinding(no);
+    this.validateBinding(binding);
     this.entries.push({
-      binding: no,
+      binding: binding,
       resource: textureView
     });
     return this;
@@ -307,12 +392,12 @@ export class BindGroupBuilder {
 
   // 添加Sampler采样器支持
   addSampler(
-    no: number,
+    binding: number,
     sampler: GPUSampler,
   ): this {
-    this.validateBinding(no);
+    this.validateBinding(binding);
     this.entries.push({
-      binding: no,
+      binding: binding,
       resource: sampler
     });
     return this;

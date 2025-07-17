@@ -9,54 +9,13 @@ import { util_mod } from 'synario.base';
 import * as types_mod from './types';
 
 /**
- * 顶点属性类型
- */
-export enum VertexAttributeType {
-  Position2 = 'position2',
-  Position3 = 'position3',
-  Position4 = 'position4',
-  Normal = 'normal',
-  Tangent = 'tangent',
-  Bitangent = 'bitangent',
-  UV = 'uv',
-  UV2 = 'uv2',
-  ColorU32x1 = 'coloru32x1',
-  ColorF32x4 = 'colorf32x4',
-  VertexID = 'vertexId',
-  InstanceID = 'instanceId',
-  MaterialID = 'materialId',
-  ObjectID = 'objectId',
-  DrawID = 'drawId',
-  PrimitiveID = 'primitiveId',
-  BoneIndices = 'boneIndices',
-  BoneWeights = 'boneWeights',
-  MorphTarget = 'morphTarget',
-  MorphWeight = 'morphWeight',
-  ParticlePosition = 'particlePosition',
-  ParticleVelocity = 'particleVelocity',
-  ParticleAge = 'particleAge',
-  ParticleSize = 'particleSize',
-  ParticleRotation = 'particleRotation',
-  Occlusion = 'occlusion',
-  Metalness = 'metalness',
-  Roughness = 'roughness',
-  Emissive = 'emissive',
-  Custom = 'custom'
-}
-
-/**
  * 顶点属性配置接口
  */
 export interface VertexAttributeConfig {
-  type: VertexAttributeType | string;
   format: GPUVertexFormat;
-  shaderLocation?: number;
-  offset?: number;
+  offset: number;
+  shaderLocation: number;
   size?: number;
-  semantic?: string;
-  normalize?: boolean;
-  customName?: string;
-  required?: boolean;
 }
 
 /**
@@ -68,19 +27,20 @@ export class VertexBufferBuilder {
   private offset = 0;
   private location = 0;
   private stride = 0;
-
+  private stepMode: GPUVertexStepMode;
+  constructor(stepMode: GPUVertexStepMode = 'vertex') {
+    this.stepMode = stepMode;
+  }
   /**
    * 添加通用属性
    */
-  private addAttribute(type: VertexAttributeType | string, format: GPUVertexFormat, opts?: Partial<VertexAttributeConfig>) {
+  append(format: GPUVertexFormat) {
     const size = VertexBufferBuilder.getFormatSize(format);
     const attr: VertexAttributeConfig = {
-      type,
       format,
       shaderLocation: this.location,
       offset: this.offset,
-      size,
-      ...opts
+      size
     };
     this.attributes.push(attr);
     this.offset += size;
@@ -88,79 +48,32 @@ export class VertexBufferBuilder {
     this.stride = this.offset;
     return this;
   }
-
-  withPosition2(format: GPUVertexFormat = 'float32x2') {
-    return this.addAttribute(VertexAttributeType.Position2, format);
-  }
-  withPosition3(format: GPUVertexFormat = 'float32x3') {
-    return this.addAttribute(VertexAttributeType.Position3, format);
-  }
-  withPosition4(format: GPUVertexFormat = 'float32x4') {
-    return this.addAttribute(VertexAttributeType.Position4, format);
-  }
-  withNormal(format: GPUVertexFormat = 'float32x3') {
-    return this.addAttribute(VertexAttributeType.Normal, format);
-  }
-  withTangent(format: GPUVertexFormat = 'float32x4') {
-    return this.addAttribute(VertexAttributeType.Tangent, format);
-  }
-  withBitangent(format: GPUVertexFormat = 'float32x3') {
-    return this.addAttribute(VertexAttributeType.Bitangent, format);
-  }
-  withUV(format: GPUVertexFormat = 'float32x2') {
-    return this.addAttribute(VertexAttributeType.UV, format);
-  }
-  withUV2(format: GPUVertexFormat = 'float32x2') {
-    return this.addAttribute(VertexAttributeType.UV2, format);
-  }
-  //color
-  withColorU32x1(format: GPUVertexFormat = 'uint32') {
-    return this.addAttribute(VertexAttributeType.ColorU32x1, format);
-  }
-  withColorF32x4(format: GPUVertexFormat = 'float32x4') {
-    return this.addAttribute(VertexAttributeType.ColorF32x4, format);
-  }
-  withObjectID(format: GPUVertexFormat = 'uint32') {
-    return this.addAttribute(VertexAttributeType.ObjectID, format);
-  }
-  withMaterialID(format: GPUVertexFormat = 'uint32') {
-    return this.addAttribute(VertexAttributeType.MaterialID, format);
-  }
-  withInstanceID(format: GPUVertexFormat = 'uint32') {
-    return this.addAttribute(VertexAttributeType.InstanceID, format);
-  }
-  withCustom(type: string, format: GPUVertexFormat) {
-    return this.addAttribute(type, format);
-  }
-
-  /**
-   * 支持自定义顺序和属性
-   */
-  setLocation(location: number) {
-    this.location = location;
+  add(format: GPUVertexFormat, start: GPUIndex32) {
+    const size = VertexBufferBuilder.getFormatSize(format);
+    const attr: VertexAttributeConfig = {
+      format,
+      shaderLocation: this.location,
+      offset: this.offset,
+      size
+    };
+    this.attributes.push(attr);
+    this.offset += size;
+    this.location += start;
+    this.stride = this.offset;
     return this;
   }
-  setOffset(offset: number) {
-    this.offset = offset;
-    return this;
-  }
-  setStride(stride: number) {
-    this.stride = stride;
-    return this;
-  }
-
   /**
    * 构建 GPUVertexBufferLayout
    */
   build(): GPUVertexBufferLayout {
     const attributes: GPUVertexAttribute[] = this.attributes.map(attr => ({
+      format: attr.format,
+      offset: attr.offset,
       shaderLocation: attr.shaderLocation!,
-      offset: attr.offset!,
-      format: attr.format
     }));
     return {
       arrayStride: this.stride,
-      stepMode: 'vertex',
+      stepMode: this.stepMode,
       attributes
     };
   }

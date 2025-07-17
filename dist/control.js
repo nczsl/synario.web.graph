@@ -1,22 +1,26 @@
 import * as data_access_mod from './data-access';
 import * as camera_mod from './camera';
 import * as signal_mod from './signal';
-import * as model_mod from './model';
+import * as scen_mod from './scene';
+import * as types_mod from './types';
 export class Control {
     access;
     camera;
     signal;
+    samplers = {};
+    samplerBindGroupLayoutId = -1;
+    samplerBindGroupId = -1;
     constructor(access) {
         this.access = access;
         this.camera = new camera_mod.Camera();
         this.signal = new signal_mod.Signal();
-        this.initSignal();
-        this.initCamera();
         this.access.initSignalCamera(this.signal, this.camera);
         this.registryEvent();
+        this.initSamplers(this.access.scenery.device);
+        this.initSamplerBindGroup(this.access.scenery.device);
     }
     registryEvent() {
-        const canvas = this.access.scen.canvas;
+        const canvas = this.access.scenery.canvas;
         canvas.addEventListener('mousemove', (e) => {
             this.signal.mouse.updateFromEvent(e);
         });
@@ -42,20 +46,62 @@ export class Control {
             this.camera.updateViewProjectionMatrix();
         });
     }
-    initSignal() {
-        this.signal.mouse.gbufferId = this.access.registryBuffer(Math.max(signal_mod.MouseInfo.BUFFER_SIZE, 256), GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE);
-        this.signal.key.gbufferId = this.access.registryBuffer(Math.max(signal_mod.KeyInfo.BUFFER_SIZE, 256), GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE);
-        this.signal.tick.gbufferId = this.access.registryBuffer(Math.max(signal_mod.TickInfo.BUFFER_SIZE, 256), GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE);
-    }
-    initCamera() {
-        this.camera.bufferId = this.access.registryBuffer(camera_mod.Camera.BUFFER_SIZE, GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST);
-    }
     update(tick) {
         this.signal.tick.nextFrame(tick);
-        this.access.updateBuffer(this.signal.mouse.gbufferId, this.signal.mouse.buffer);
-        this.access.updateBuffer(this.signal.key.gbufferId, this.signal.key.buffer);
-        this.access.updateBuffer(this.signal.tick.gbufferId, this.signal.tick.buffer);
+        const combinedBuffer = this.signal.getCombinedBufferData();
+        this.access.updateBuffer(this.signal.gbufferId, combinedBuffer);
         this.camera.updateBuffer();
         this.access.updateBuffer(this.camera.bufferId, this.camera.buffer);
+    }
+    initSamplers(device) {
+        this.samplers.linear = device.createSampler({
+            magFilter: 'linear',
+            minFilter: 'linear',
+            addressModeU: 'repeat',
+            addressModeV: 'repeat',
+        });
+        this.samplers.nearest = device.createSampler({
+            magFilter: 'nearest',
+            minFilter: 'nearest',
+            addressModeU: 'repeat',
+            addressModeV: 'repeat',
+        });
+        this.samplers.linearClamp = device.createSampler({
+            magFilter: 'linear',
+            minFilter: 'linear',
+            addressModeU: 'clamp-to-edge',
+            addressModeV: 'clamp-to-edge',
+        });
+    }
+    getSampler(name) {
+        return this.samplers[name];
+    }
+    initSamplerBindGroup(device) {
+        this.samplerBindGroupLayoutId = this.access.registryBindGroupLayout(builder => {
+            let idx = 0;
+            if (this.samplers.linear)
+                builder.addSampler(idx++, GPUShaderStage.FRAGMENT);
+            if (this.samplers.nearest)
+                builder.addSampler(idx++, GPUShaderStage.FRAGMENT);
+            if (this.samplers.linearClamp)
+                builder.addSampler(idx++, GPUShaderStage.FRAGMENT);
+            return builder.build(device);
+        });
+        this.samplerBindGroupId = this.access.registryBindGroup(builder => {
+            let idx = 0;
+            if (this.samplers.linear)
+                builder.addSampler(idx++, this.samplers.linear);
+            if (this.samplers.nearest)
+                builder.addSampler(idx++, this.samplers.nearest);
+            if (this.samplers.linearClamp)
+                builder.addSampler(idx++, this.samplers.linearClamp);
+            return builder.build(device, this.access.store.get(types_mod.ResType.bindGroupLayout, this.samplerBindGroupLayoutId));
+        });
+    }
+    getSamplerBindGroup() {
+        return this.access.store.get(types_mod.ResType.bindGroup, this.samplerBindGroupId);
+    }
+    getSamplerBindGroupLayout() {
+        return this.access.store.get(types_mod.ResType.bindGroupLayout, this.samplerBindGroupLayoutId);
     }
 }

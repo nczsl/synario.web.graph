@@ -6,6 +6,7 @@ export declare class Scenery {
     context: GPUCanvasContext;
     device: GPUDevice;
     control: control_mod.Control;
+    format: GPUTextureFormat;
     private isRunning;
     access: data_access_mod.DataAccess;
     major: render_graph_mod.RenderGraph;

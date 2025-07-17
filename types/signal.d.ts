@@ -1,109 +1,50 @@
+import * as types_mod from './types';
+export declare class MouseInfo {
+    static DATA_SIZE: number;
+    x: number;
+    y: number;
+    prevX: number;
+    prevY: number;
+    buttons: number;
+    gbufferId?: types_mod.Id;
+    buffer?: ArrayBuffer;
+    updateFromEvent(e: MouseEvent): void;
+    packInto(view: DataView, offset: number): void;
+    pack(): ArrayBuffer;
+}
+export declare class KeyInfo {
+    static DATA_SIZE: number;
+    private keyStates;
+    gbufferId?: types_mod.Id;
+    buffer?: ArrayBuffer;
+    updateFromEvent(e: KeyboardEvent): void;
+    setKeyState(keyCode: number, isPressed: boolean): void;
+    packInto(view: DataView, offset: number): void;
+    pack(): ArrayBuffer;
+}
+export declare class TickInfo {
+    static DATA_SIZE: number;
+    frameCount: number;
+    deltaTime: number;
+    gbufferId?: types_mod.Id;
+    buffer?: ArrayBuffer;
+    nextFrame(tick: number): void;
+    packInto(view: DataView, offset: number): void;
+    pack(): ArrayBuffer;
+}
 export declare class Signal {
     mouse: MouseInfo;
     key: KeyInfo;
     tick: TickInfo;
-    bindgrouplayoutId_vs: number;
-    bindgroupId_vs: number;
-    bindgrouplayoutId_cs: number;
-    bindgroupId_cs: number;
+    static MOUSE_OFFSET: number;
+    static KEY_OFFSET: number;
+    static TICK_OFFSET: number;
+    static COMBINED_BUFFER_SIZE: number;
+    gbufferId: types_mod.Id;
+    bindGroupLayoutId_vs: types_mod.Id;
+    bindGroupId_vs: types_mod.Id;
+    bindGroupLayoutId_cs: types_mod.Id;
+    bindGroupId_cs: types_mod.Id;
     constructor();
-}
-export declare class MouseInfo {
-    private static readonly FIELDS;
-    private static readonly BYTES_PER_FLOAT32;
-    static readonly BUFFER_SIZE = 256;
-    buffer: ArrayBuffer;
-    private floatView;
-    gbufferId: number;
-    private static readonly IDX;
-    get screenX(): number;
-    set screenX(v: number);
-    get screenY(): number;
-    set screenY(v: number);
-    get clientX(): number;
-    set clientX(v: number);
-    get clientY(): number;
-    set clientY(v: number);
-    get movementX(): number;
-    set movementX(v: number);
-    get movementY(): number;
-    set movementY(v: number);
-    get pageX(): number;
-    set pageX(v: number);
-    get pageY(): number;
-    set pageY(v: number);
-    get offsetX(): number;
-    set offsetX(v: number);
-    get offsetY(): number;
-    set offsetY(v: number);
-    get x(): number;
-    set x(v: number);
-    get y(): number;
-    set y(v: number);
-    get button(): number;
-    set button(v: number);
-    get buttons(): number;
-    set buttons(v: number);
-    get timestamp(): number;
-    set timestamp(v: number);
-    updateFromEvent(event: MouseEvent): void;
-    reset(): void;
-}
-export declare class KeyInfo {
-    private static readonly FLOAT_FIELDS;
-    private static readonly BOOL_FIELDS;
-    private static readonly BYTES_PER_FLOAT64;
-    private static readonly BYTES_PER_BOOL;
-    static readonly BUFFER_SIZE = 256;
-    buffer: ArrayBuffer;
-    private floatView;
-    private boolView;
-    code: string;
-    key: string;
-    private static readonly IDX;
-    gbufferId: number;
-    get location(): number;
-    set location(v: number);
-    get timestamp(): number;
-    set timestamp(v: number);
-    get repeat(): boolean;
-    set repeat(v: boolean);
-    get isComposing(): boolean;
-    set isComposing(v: boolean);
-    get ctrlKey(): boolean;
-    set ctrlKey(v: boolean);
-    get shiftKey(): boolean;
-    set shiftKey(v: boolean);
-    get altKey(): boolean;
-    set altKey(v: boolean);
-    get metaKey(): boolean;
-    set metaKey(v: boolean);
-    updateFromEvent(event: KeyboardEvent): void;
-    reset(): void;
-}
-export declare class TickInfo {
-    private static readonly UINT_FIELDS;
-    private static readonly FLOAT_FIELDS;
-    private static readonly BYTES_PER_UINT32;
-    private static readonly BYTES_PER_FLOAT32;
-    static readonly BUFFER_SIZE = 256;
-    buffer: ArrayBuffer;
-    private uintView;
-    private floatView;
-    gbufferId: number;
-    private static readonly IDX;
-    get tick(): number;
-    set tick(v: number);
-    get time(): number;
-    set time(v: number);
-    get deltaTime(): number;
-    set deltaTime(v: number);
-    get frameStart(): number;
-    set frameStart(v: number);
-    get lastFrameStart(): number;
-    set lastFrameStart(v: number);
-    get fps(): number;
-    set fps(v: number);
-    nextFrame(tick: number): void;
-    reset(): void;
+    getCombinedBufferData(): ArrayBuffer;
 }
